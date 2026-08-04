@@ -131,7 +131,3 @@ Distributed under the MIT License. See LICENSE for details.
 
 Author: Xento (@thexento)
 
-
----
-
-File completed. Please request `.gitignore` or `LICENSE`.
