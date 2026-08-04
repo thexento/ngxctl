@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ngxctl"
-version = "0.1.0"
+name = "ngxctl-cli"
+version = "0.1.1"
 description = "A modern command-line tool for generating, managing, and validating Nginx configurations."
 readme = "README.md"
 requires-python = ">=3.12"

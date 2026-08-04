@@ -143,7 +143,7 @@ Before installing `ngxctl`, ensure you have:
 ## Install from PyPI
 
 ```bash
-pip install ngxctl
+pip install ngxctl-cli
 ```
 
 ---
