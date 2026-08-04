@@ -1,217 +1,137 @@
+
 # ngxctl
 
-A command-line tool for generating, managing, and validating Nginx configurations.
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-`ngxctl` is built to simplify the repetitive parts of working with Nginx. Whether you're setting up a reverse proxy, serving a static website, or deploying an application, it helps you generate clean configurations, validate them, and safely apply changes without manually writing the same boilerplate every time.
+**ngxctl** is a modern, fast, human-friendly command-line utility for generating, managing, validating, and applying Nginx configurations.
 
-The goal is simple: spend less time writing configuration files and more time building your applications.
-
-> **Status:** This project is currently under active development. Features and commands may change until the first stable release.
+It automates repetitive Nginx web server management tasks—from generating reverse proxy blocks for Node.js/Python apps to managing active sites and creating automatic snapshot backups—while producing clean, human-readable configuration files.
 
 ---
 
-## Features
+## Key Features
 
-### Current
-
-* Generate Nginx configuration files
-* Reverse proxy configuration generator
-* Interactive command-line interface
-* Template-based configuration generation
-
-### Planned
-
-* Static website templates
-* React & Vue support
-* Node.js application templates
-* Python (Flask, Django, FastAPI) templates
-* PHP support
-* Docker reverse proxy templates
-* SSL configuration
-* HTTP to HTTPS redirects
-* Configuration validation (`nginx -t`)
-* Reload and restart Nginx
-* Enable and disable sites
-* Configuration inspection
-* Backup and restore
-* Custom templates
+- **Interactive Setup Wizard**: Run `ngxctl create` to launch a guided, 3-question setup with smart defaults (auto-detects server IP, current working directory, and backend ports).
+- **Reverse Proxy Support**: Built-in support for Node.js, Python (Flask, Django, FastAPI), Docker, Go, and WebSocket upgrade headers.
+- **Static Sites & SPAs**: Native support for static file hosting and Single Page Application (React, Vue, Svelte) client-side routing.
+- **PHP Applications**: Configured for FastCGI PHP-FPM servers (Laravel, WordPress).
+- **Site Management**: Simple subcommands to list, inspect, enable, or disable sites without manually managing `/etc/nginx/sites-enabled/` symlinks.
+- **Service Control**: Integrated syntax testing (`nginx -t`), non-disruptive reloading, and restarting.
+- **Snapshot Backups**: Atomic, timestamped backup snapshots created automatically before configuration overwrites, with full rollback/restore support.
 
 ---
 
 ## Installation
 
-### From PyPI
+### Prerequisites
 
-Coming soon.
+- Python 3.12 or higher
+- Nginx web server installed on host
 
-```bash
-pip install ngxctl
-```
-
-### Development
-
-Clone the repository.
+### Install via pipx (Recommended)
 
 ```bash
+pipx install git+https://github.com/thexento/ngxctl.git
+
+Install in Editable / Development Mode
+
 git clone https://github.com/thexento/ngxctl.git
-```
-
-Move into the project.
-
-```bash
 cd ngxctl
-```
-
-Create a virtual environment.
-
-**Linux / macOS**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-**Windows**
-
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-Install the project in editable mode.
-
-```bash
 pip install -e .
-```
 
----
+Quickstart & Usage
 
-## Usage
+1. Interactive Site Creation (Fastest)
 
-Generate a new configuration.
+Simply run ngxctl create without arguments to launch the interactive wizard:
 
-```bash
 ngxctl create
-```
 
-Validate the current Nginx configuration.
+Wizard Flow:
 
-```bash
-ngxctl test
-```
+1.  Enter domain name (defaults to server IP or _).
+2.  Select site type (Reverse Proxy, Static/SPA, PHP).
+3.  Confirm quick setup (automatically generates config, links symlink, runs
+    nginx -t, and reloads Nginx).
 
-Reload Nginx after a successful validation.
+2. Flag-Driven Commands
 
-```bash
-ngxctl reload
-```
+Reverse Proxy
 
-Restart the Nginx service.
+# Create reverse proxy for app running on port 3000
+ngxctl create reverse-proxy -d app.example.com -p 3000
 
-```bash
-ngxctl restart
-```
+# Specify custom backend URL with WebSockets
+ngxctl create reverse-proxy -d app.example.com -p http://127.0.0.1:8080 --websocket
 
-Enable a site.
+Static Website / SPA
 
-```bash
-ngxctl enable mysite
-```
+# Serve static site from current directory
+ngxctl create static -d example.com
 
-Disable a site.
+# Serve React/Vue SPA with client-side routing fallback
+ngxctl create static -d spa.example.com -r /var/www/my-app/dist --spa
 
-```bash
-ngxctl disable mysite
-```
+PHP Application
 
-List available configurations.
+ngxctl create php -d php.example.com -r /var/www/wordpress
 
-```bash
+3. Managing Sites
+
+# List all configured sites and active status
 ngxctl list
-```
 
-Inspect a configuration.
-
-```bash
+# Inspect detailed status and directives for a site
 ngxctl inspect mysite
-```
 
----
+# Enable a site (creates symlink in sites-enabled & reloads)
+ngxctl enable mysite
 
-## Example Workflow
+# Disable a site (removes symlink & reloads)
+ngxctl disable mysite
 
-Create a reverse proxy.
+4. Service Operations & Syntax Testing
 
-```bash
-ngxctl create
-```
-
-Validate the generated configuration.
-
-```bash
+# Test Nginx syntax (nginx -t)
 ngxctl test
-```
 
-If the configuration is valid, reload Nginx.
-
-```bash
+# Reload Nginx safely (tests syntax first)
 ngxctl reload
-```
+
+# Restart Nginx service
+ngxctl restart
+
+5. Snapshot Backups & Restoration
+
+# Create an on-demand snapshot backup
+ngxctl backup create mysite
+
+# List all stored snapshots
+ngxctl backup list
+
+# Interactively select and restore a backup snapshot
+ngxctl backup restore mysite
+
+Environment Variable Overrides
+
+Custom Nginx directory paths can be overridden using environment variables:
+
+| Variable                 | Description                                  |
+| :----------------------- | :------------------------------------------- |
+| `NGXCTL_NGINX_DIR`       | Base Nginx directory (default: `/etc/nginx`) |
+| `NGXCTL_SITES_AVAILABLE` | Path to `sites-available`                    |
+| `NGXCTL_SITES_ENABLED`   | Path to `sites-enabled`                      |
+| `NGXCTL_CONF_D`          | Path to `conf.d`                             |
+| `NGXCTL_BACKUP_DIR`      | Custom backup snapshot directory             |
+
+License
+
+Distributed under the MIT License. See LICENSE for details.
+
+Author: Xento (@thexento)
+
 
 ---
 
-## Project Structure
-
-```text
-ngxctl/
-├── commands/
-├── helpers/
-├── templates/
-├── utils/
-├── cli.py
-├── generator.py
-├── __main__.py
-└── __init__.py
-```
-
----
-
-## Contributing
-
-Contributions are always welcome.
-
-If you have an idea, find a bug, or would like to improve the project, feel free to open an issue or submit a pull request.
-
-Clone your fork.
-
-```bash
-git clone <your-fork-url>
-```
-
-Create a feature branch.
-
-```bash
-git checkout -b feature/my-feature
-```
-
-Commit your changes.
-
-```bash
-git commit -m "Describe your changes"
-```
-
-Push the branch.
-
-```bash
-git push origin feature/my-feature
-```
-
-Then open a Pull Request.
-
----
-
-## License
-
-This project is licensed under the MIT License.
-
-See the [LICENSE](LICENSE) file for details.
+File completed. Please request `.gitignore` or `LICENSE`.
