@@ -1,25 +1,9 @@
-"""Utility functions and terminal formatting helpers for ngxctl."""
+"""ngxctl - Command-line tool for generating and managing Nginx configurations."""
 
-from ngxctl.utils.console import confirm, error, info, success, warning
-from ngxctl.utils.fs import (
-    atomic_write,
-    can_write,
-    create_symlink,
-    ensure_directory,
-    is_root,
-    remove_path,
-)
+__version__ = "0.1.0"
+__author__ = "Xento"
 
-__all__ = (
-    "is_root",
-    "can_write",
-    "ensure_directory",
-    "atomic_write",
-    "create_symlink",
-    "remove_path",
-    "info",
-    "success",
-    "warning",
-    "error",
-    "confirm",
-)
+__all__ = [
+    "__version__",
+    "__author__",
+]
