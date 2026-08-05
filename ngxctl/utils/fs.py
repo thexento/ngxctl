@@ -1,8 +1,12 @@
-"""Safe filesystem utility functions for ngxctl."""
+"""Safe filesystem utility functions and privilege management for ngxctl."""
 
 import os
+import sys
 import tempfile
 from pathlib import Path
+import click
+
+from ngxctl.utils import console
 
 
 def is_root() -> bool:
@@ -16,19 +20,45 @@ def can_write(path: Path) -> bool:
     return os.access(target, os.W_OK)
 
 
+def elevate_privileges() -> None:
+    """Re-executes the current ngxctl CLI invocation with sudo while preserving PYTHONPATH."""
+    if not is_root():
+        # Preserve user's Python module search path so root's Python can import ngxctl
+        python_path = os.pathsep.join(sys.path)
+        args = ["sudo", "env", f"PYTHONPATH={python_path}", sys.executable] + sys.argv
+        os.execvp("sudo", args)
+
+
+def check_root_or_elevate(action_description: str = "file operations in /etc/nginx", auto_prompt: bool = True) -> bool:
+    """Check for root privileges. If missing, warn user and offer auto-elevation.
+    
+    Returns True if running as root or after successful elevation.
+    """
+    if is_root():
+        return True
+
+    console.warning(f"ngxctl does not have root/sudo permissions to perform {action_description}.")
+    
+    command_str = " ".join(sys.argv)
+    click.echo(f"    To run manually: {click.style(f'sudo {command_str}', fg='cyan', bold=True)}")
+
+    if auto_prompt:
+        if console.confirm("    Would you like ngxctl to elevate automatically using sudo now?", default=True):
+            elevate_privileges()
+            return True
+
+    return False
+
+
 def ensure_directory(path: Path) -> None:
     """Ensure that a directory path exists, creating parent directories if necessary."""
     path.mkdir(parents=True, exist_ok=True)
 
 
 def atomic_write(target_path: Path, content: str) -> None:
-    """Safely write content to a file atomically via a temporary file replacement.
-    
-    Prevents corrupting active Nginx configurations if writing fails mid-operation.
-    """
+    """Safely write content to a file atomically via a temporary file replacement."""
     ensure_directory(target_path.parent)
 
-    # Create temporary file in the same target directory to ensure same filesystem mount for os.replace
     temp_fd, temp_path_str = tempfile.mkstemp(
         dir=target_path.parent,
         prefix=f".{target_path.name}.tmp-",
@@ -41,7 +71,6 @@ def atomic_write(target_path: Path, content: str) -> None:
             f.flush()
             os.fsync(f.fileno())
 
-        # Atomically replace target file
         os.replace(temp_path, target_path)
     except Exception:
         if temp_path.exists():
@@ -50,10 +79,7 @@ def atomic_write(target_path: Path, content: str) -> None:
 
 
 def create_symlink(source: Path, target: Path, force: bool = True) -> None:
-    """Create a symbolic link from source to target.
-    
-    If force is True, overwrites an existing destination symlink or file.
-    """
+    """Create a symbolic link from source to target."""
     ensure_directory(target.parent)
 
     if target.is_symlink() or target.exists():
@@ -66,10 +92,7 @@ def create_symlink(source: Path, target: Path, force: bool = True) -> None:
 
 
 def remove_path(target: Path) -> bool:
-    """Safely remove a file or symlink if it exists.
-    
-    Returns True if a path was removed, False if it did not exist.
-    """
+    """Safely remove a file or symlink if it exists."""
     if target.is_symlink() or target.exists():
         target.unlink(missing_ok=True)
         return True
