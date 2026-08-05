@@ -12,6 +12,7 @@ from ngxctl.core.system import (
     test_config,
 )
 from ngxctl.utils import console
+from ngxctl.utils.fs import can_write, check_root_or_elevate, is_root
 
 
 @click.command(name="enable")
@@ -26,6 +27,12 @@ def enable_cmd(ctx: click.Context, site_name: str | None, reload: bool) -> None:
     if not paths.uses_sites_structure:
         console.warning("This system uses conf.d structure; sites are active directly without symlinks.")
         return
+
+    # Check root permission before symlinking
+    target_dir = paths.sites_enabled or paths.nginx_dir
+    if not can_write(target_dir):
+        if not check_root_or_elevate("enabling site configurations"):
+            return
 
     # Interactive selection if site_name is not provided
     if not site_name:
@@ -69,6 +76,12 @@ def disable_cmd(ctx: click.Context, site_name: str | None, reload: bool) -> None
     if not paths.uses_sites_structure:
         console.warning("This system uses conf.d structure; disable by removing/moving the .conf file.")
         return
+
+    # Check root permission before removing symlink
+    target_dir = paths.sites_enabled or paths.nginx_dir
+    if not can_write(target_dir):
+        if not check_root_or_elevate("disabling site configurations"):
+            return
 
     # Interactive selection if site_name is not provided
     if not site_name:
@@ -118,12 +131,19 @@ def test_cmd() -> None:
 @click.command(name="reload")
 def reload_cmd() -> None:
     """Reload Nginx service without dropping connections."""
+    if not is_root():
+        if not check_root_or_elevate("reloading Nginx service"):
+            return
     _test_and_reload()
 
 
 @click.command(name="restart")
 def restart_cmd() -> None:
     """Restart Nginx service."""
+    if not is_root():
+        if not check_root_or_elevate("restarting Nginx service"):
+            return
+
     console.info("Validating Nginx syntax before restart...")
     test_res = test_config()
     if not test_res.success:
