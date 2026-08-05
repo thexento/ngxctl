@@ -1,4 +1,4 @@
-````markdown
+
 <div align="center">
 
 <img src="public/ngxctl-banner.png" alt="ngxctl Banner" width="100%">
@@ -442,4 +442,3 @@ See the **LICENSE** file for details.
 ⭐ If you find this project useful, consider giving it a star.
 
 </div>
-````
