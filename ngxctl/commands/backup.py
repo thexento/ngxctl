@@ -7,6 +7,7 @@ from ngxctl.core.backup import create_backup, list_backups, restore_backup
 from ngxctl.core.inspector import get_site_info, list_all_sites
 from ngxctl.core.system import reload_nginx, test_config
 from ngxctl.utils import console
+from ngxctl.utils.fs import can_write, check_root_or_elevate
 
 
 @click.group(name="backup")
@@ -107,6 +108,11 @@ def restore_backup_cmd(ctx: click.Context, site_name: str | None, reload: bool) 
         target_path = paths.conf_d / f"{target_site_name}.conf"
     else:
         target_path = paths.nginx_dir / f"{target_site_name}.conf"
+
+    # Permission check for target write directory
+    if not can_write(target_path.parent):
+        if not check_root_or_elevate(f"restoring configuration snapshot to '{target_path.parent}'"):
+            return
 
     try:
         restore_backup(selected_backup, target_path)
