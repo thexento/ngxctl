@@ -3,7 +3,7 @@
 
 <img src="public/ngxctl-banner.png"
      alt="ngxctl Banner"
-     width="700">
+     width="400">
 
 <br>
 
@@ -87,27 +87,26 @@ Do that often enough and it becomes repetitive.
 - SSL-ready templates
 - HTTP → HTTPS redirects
 
----
+## Supported Technologies
 
-## Supported Backends
+**Reverse Proxies**
+- Node.js
+- Express
+- NestJS
+- FastAPI
+- Flask
+- Django
+- Go
+- PHP-FPM
 
-| Backend | Supported |
-|---------|:---------:|
-| Node.js | ✅ |
-| Express | ✅ |
-| NestJS | ✅ |
-| FastAPI | ✅ |
-| Flask | ✅ |
-| Django | ✅ |
-| Go | ✅ |
-| PHP-FPM | ✅ |
-| Docker Containers | ✅ |
-| Static Websites | ✅ |
-| React | ✅ |
-| Vue | ✅ |
-| Svelte | ✅ |
+**Frontend Applications**
+- React
+- Vue
+- Svelte
+- Static Websites
 
----
+**Deployment Targets**
+- Docker Containers
 
 ## Site Management
 
