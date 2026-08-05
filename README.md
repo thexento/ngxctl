@@ -1,13 +1,12 @@
 
 <div align="center">
 
-<img src="public/ngxctl-banner.png" alt="ngxctl Banner" width="100%">
+<img src="public/ngxctl-banner.png"
+     alt="ngxctl Banner"
+     width="700">
 
 <br>
 
-<a href="https://github.com/thexento/ngxctl">
-    <img src="public/ngxctl-logo.png" alt="ngxctl Logo" width="140">
-</a>
 
 # ngxctl
 
