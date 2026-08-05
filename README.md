@@ -3,7 +3,7 @@
 
 <img src="public/ngxctl-banner.png"
      alt="ngxctl Banner"
-     width="400">
+     width="150">
 
 <br>
 
