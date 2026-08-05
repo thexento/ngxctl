@@ -19,18 +19,19 @@ class SiteContext:
     ssl_cert_path: str | None = None
     ssl_key_path: str | None = None
     force_https: bool = False
-    
+
     # Static Site / SPA fields
     root_dir: str | None = None
+    entrypoint: str = "index.html"
     index_files: list[str] = field(default_factory=lambda: ["index.html", "index.htm"])
-    is_spa: bool = False  # Enable try_files $uri $uri/ /index.html
-    
+    is_spa: bool = False  # Enable try_files $uri $uri/ /entrypoint
+
     # Reverse Proxy / App Backend fields
     proxy_pass_url: str | None = None
     enable_websocket: bool = False
     client_max_body_size: str = "10M"
 
-    def validate((self)) -> None:
+    def validate(self) -> None:
         """Validate context consistency before rendering."""
         if not self.domains:
             raise ValueError("At least one domain name must be provided.")
@@ -51,6 +52,12 @@ class SiteContext:
         primary_domain = self.domains[0]
         server_name_str = " ".join(self.domains)
 
+        # Build index files list with primary entrypoint first
+        ordered_indices = [self.entrypoint]
+        for f in self.index_files:
+            if f not in ordered_indices:
+                ordered_indices.append(f)
+
         return {
             "domains": self.domains,
             "primary_domain": primary_domain,
@@ -61,7 +68,8 @@ class SiteContext:
             "ssl_key_path": self.ssl_key_path,
             "force_https": self.force_https,
             "root_dir": self.root_dir,
-            "index_files": " ".join(self.index_files),
+            "entrypoint": self.entrypoint,
+            "index_files": " ".join(ordered_indices),
             "is_spa": self.is_spa,
             "proxy_pass_url": self.proxy_pass_url,
             "enable_websocket": self.enable_websocket,
@@ -95,7 +103,7 @@ class ConfigGenerator:
 
     def render(self, template_name: str, context: SiteContext) -> str:
         """Render an Nginx configuration template with the given site context.
-        
+
         Template name should include the extension (e.g. 'reverse_proxy.j2', 'static.j2').
         """
         if not template_name.endswith(".j2"):
