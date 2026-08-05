@@ -32,7 +32,7 @@ server {
     location / {
         {% if is_spa %}
         # SPA client-side routing fallback
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /{{ entrypoint | default('index.html') }};
         {% else %}
         try_files $uri $uri/ =404;
         {% endif %}
