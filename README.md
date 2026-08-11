@@ -15,7 +15,7 @@
 <p>
 
 <a href="https://www.python.org/downloads/">
-<img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white">
+<img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white">
 </a>
 
 <a href="https://pypi.org/project/ngxctl-cli/">
@@ -142,7 +142,7 @@ Do that often enough and it becomes repetitive.
 
 ## Requirements
 
-- Python **3.12+**
+- Python **0+**
 - Nginx
 - Linux
 
